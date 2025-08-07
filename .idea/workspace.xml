@@ -1,20 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd1db27c-d2d0-48a8-aad6-b329481fd176" name="Changes" comment="" />
+    <list default="true" id="bd1db27c-d2d0-48a8-aad6-b329481fd176" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/Readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/logging.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/logging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/auth/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth/app/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/batches.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/batches.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/logging.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/logging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/qcbatches.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/qcbatches.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/batch/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/batch/app/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/logging.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/logging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/users.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/users.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user/app/utils.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="30u20S7joC6NZFNKifLSQqMGpE8" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -22,7 +70,9 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master"
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "D:/bioprocess-analytics-micro",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.VCS"
   }
 }]]></component>
   <component name="SharedIndexes">

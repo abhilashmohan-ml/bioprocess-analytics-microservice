@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  gateway:
+    build: ./gateway
+    ports: ["8080:8080"]
+    depends_on: [user, batch, auth]
+    environment:
+      - USERS_URL=http://user:9002
+      - BATCH_URL=http://batch:9003
+      - AUTH_URL=http://auth:9001
+  auth:
+    build: ./services/auth
+    ports: ["9001:9001"]
+    depends_on: [db_auth]
+    environment:
+      - AUTH_DATABASE_URL=postgresql+psycopg2://authuser:password@db_auth:5432/authdb
+      - SECRET_KEY=changeme
+  user:
+    build: ./services/user
+    ports: ["9002:9002"]
+    depends_on: [db_user]
+    environment:
+      - USER_DATABASE_URL=postgresql+psycopg2://useruser:password@db_user:5432/userdb
+  batch:
+    build: ./services/batch
+    ports: ["9003:9003"]
+    depends_on: [db_batch]
+    environment:
+      - BATCH_DATABASE_URL=postgresql+psycopg2://batchuser:password@db_batch:5432/batchdb
+  db_auth:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: password
+  db_user:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: useruser
+      POSTGRES_PASSWORD: password
+  db_batch:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: batchdb
+      POSTGRES_USER: batchuser
+      POSTGRES_PASSWORD: password
