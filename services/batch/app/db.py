@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from os import getenv
 import uuid
 
-DATABASE_URL = getenv("BATCH_DATABASE_URL", "postgresql+psycopg2://batchuser:password@localhost:5432/batchdb")
+DATABASE_URL = getenv("BATCH_DATABASE_URL")
 engine = create_engine(DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

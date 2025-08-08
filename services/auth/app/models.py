@@ -25,3 +25,6 @@ class TokenData(BaseModel):
 
     def get_uuid(self) -> Optional[UUID]:
         return UUID(self.user_id) if self.user_id else None
+
+
+

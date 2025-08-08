@@ -1,47 +1,38 @@
-from .models import RegisterUserRequest, LoginRequest, Token, TokenData
-from .db import get_user_by_username, create_user_in_db
-from passlib.context import CryptContext
-from datetime import timedelta, datetime, timezone
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
+from passlib.context import CryptContext
 from uuid import uuid4
 from os import getenv
+from .models import RegisterUserRequest, LoginRequest, Token, TokenData
+from .db import get_user_by_username, create_user_in_db
 
-SECRET_KEY = getenv("SECRET_KEY", "supersecret123")
+SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class AuthService:
     @staticmethod
-    def register_user(db, payload: RegisterUserRequest):
+    def register_user(db, payload):
         if get_user_by_username(db, payload.username):
-            raise ValueError("Username already exists")
-        # Use an email duplicate check in production.
+            raise ValueError("Username exists")
         data = payload.dict()
         data["id"] = uuid4()
-        data["password_hash"] = pwd_context.hash(payload.password)
+        data["password_hash"] = pwd.hash(payload.password)
         del data["password"]
         create_user_in_db(db, data)
 
     @staticmethod
-    def login(db, payload: LoginRequest):
+    def login(db, payload):
         user = get_user_by_username(db, payload.username)
-        # Password check, active status check, approval checks as needed.
-        if user and pwd_context.verify(payload.password, user.password_hash):
-            exp_time = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = jwt.encode({
-                "sub": user.username,
-                "id": str(user.id),
-                "exp": exp_time
-            }, SECRET_KEY, algorithm=ALGORITHM)
-            return Token(access_token=access_token, token_type="bearer")
+        if user and pwd.verify(payload.password, user.password_hash):
+            exp = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            token = jwt.encode({"sub": user.username, "id": str(user.id), "exp": exp}, SECRET_KEY, ALGORITHM)
+            return Token(access_token=token, token_type="bearer")
         return None
 
     @staticmethod
-    def verify_token(token: str) -> TokenData:
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            return TokenData(user_id=payload["id"])
-        except JWTError:
-            raise ValueError("Token invalid or expired")
+    def verify_token(token: str):
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return TokenData(user_id=payload["id"])

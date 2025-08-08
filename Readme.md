@@ -10,3 +10,13 @@ API Docs:
 - Auth:    http://localhost:9001/docs
 - User:    http://localhost:9002/docs
 - Batch:   http://localhost:9003/docs
+
+
+
+~~~markdown
+# Bioprocess Analytics Microservices
+
+## Quick start – full production stack
+```bash
+docker-compose up --build
+~~~
