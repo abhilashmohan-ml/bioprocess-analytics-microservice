@@ -6,7 +6,7 @@ Runs on port 8080.
 from fastapi import FastAPI, Request, Response
 import httpx
 
-app = FastAPI(title="API Gateway", version="1.0.0", docs_url="/docs")
+app = FastAPI(title="API Gateway for bioprocess analytics", version="1.0.0", docs_url="/docs")
 
 SERVICE_MAP = {
     "/auth": "http://auth:9001",
