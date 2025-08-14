@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+      {
+        "name": "Batch-Service (debug)",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": [
+          "app.main:app",
+          "--host", "0.0.0.0",
+          "--port", "8003",
+          "--reload"
+        ],
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}",
+        "envFile": "${workspaceFolder}/.env"
+      }
+    ]
+  }

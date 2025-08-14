@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [],
+  "compounds": [
+    {
+      "name": "All micro-services",
+      "configurations": [
+        "Auth-Service (debug)",
+        "User-Service (debug)",
+        "Batch-Service (debug)"
+      ],
+      "stopAll": true
+    }
+  ]
+}
