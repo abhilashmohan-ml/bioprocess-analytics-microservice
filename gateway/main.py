@@ -1,12 +1,7 @@
-"""
-Gateway (reverse-proxy) for the bioprocess-analytics-micro stack.
-Runs on port 8080.
-"""
-
 from fastapi import FastAPI, Request, Response
 import httpx
 
-app = FastAPI(title="API Gateway for bioprocess analytics", version="1.0.0", docs_url="/docs")
+app = FastAPI(title="API Gateway", version="1.0.0", docs_url="/docs")
 
 SERVICE_MAP = {
     "/auth": "http://auth:9001",
@@ -22,10 +17,8 @@ async def gateway_proxy(request: Request, full_path: str) -> Response:
     backend = SERVICE_MAP.get(prefix)
     if not backend:
         return Response(status_code=404, content="No such service")
-
     path_remain = "" if len(segments) == 1 else segments[1]
     upstream_url = f"{backend}/{path_remain}"
-
     async with httpx.AsyncClient(timeout=30) as client:
         upstream_resp = await client.request(
             request.method,
@@ -34,7 +27,6 @@ async def gateway_proxy(request: Request, full_path: str) -> Response:
             params=request.query_params,
             content=await request.body(),
         )
-
     return Response(
         status_code=upstream_resp.status_code,
         content=upstream_resp.content,

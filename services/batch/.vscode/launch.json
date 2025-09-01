@@ -9,8 +9,8 @@
         "module": "uvicorn",
         "args": [
           "app.main:app",
-          "--host", "0.0.0.0",
-          "--port", "8003",
+          "--host", "127.0.0.1",
+          "--port", "9006",
           "--reload"
         ],
         "console": "integratedTerminal",
