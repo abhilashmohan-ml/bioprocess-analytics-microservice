@@ -26,10 +26,11 @@ class AuthService:
     @staticmethod
     def login(db, payload: LoginRequest):
         user = get_user_by_username(db, payload.username)
+        print("[DEBUG] supplied password:", payload.password)
+        print("[DEBUG] stored hash      :", user.password_hash)
         if user and pwd.verify(payload.password, user.password_hash):
             exp = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            token = jwt.encode({"sub": user.username, "id": str(user.id), "exp": exp}, 
-            SECRET_KEY, ALGORITHM)
+            token = jwt.encode({"sub": user.username, "id": str(user.id), "exp": exp}, SECRET_KEY, ALGORITHM)
             return Token(access_token=token, token_type="bearer")
         return None
 
