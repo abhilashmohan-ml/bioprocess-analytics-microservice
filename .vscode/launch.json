@@ -1,15 +1,126 @@
 {
   "version": "0.2.0",
-  "configurations": [],
+  "configurations": [
+    {
+      "name": "Gateway Service (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/gateway/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/gateway",
+      "python": "${workspaceFolder}/gateway/.venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/shared"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "args": [],
+      "django": false,
+      "fastapi": true,
+      "jinja": false,
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "showReturnValue": true,
+      "subProcess": true,
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "Setup Gateway Venv"
+    },
+    {
+      "name": "Auth Service (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/services/auth/app/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/services/auth",
+      "python": "${workspaceFolder}/services/auth/.venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/shared"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "args": [],
+      "django": false,
+      "fastapi": true,
+      "jinja": false,
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "showReturnValue": true,
+      "subProcess": true,
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "Setup Auth Venv"
+    },
+    {
+      "name": "User Service (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/services/user/app/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/services/user",
+      "python": "${workspaceFolder}/services/user/.venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/shared"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "args": [],
+      "django": false,
+      "fastapi": true,
+      "jinja": false,
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "showReturnValue": true,
+      "subProcess": true,
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "Setup User Venv"
+    },
+    {
+      "name": "Batch Service (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/services/batch/app/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/services/batch",
+      "python": "${workspaceFolder}/services/batch/.venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/shared"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "args": [],
+      "django": false,
+      "fastapi": true,
+      "jinja": false,
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "showReturnValue": true,
+      "subProcess": true,
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "Setup Batch Venv"
+    }
+  ],
   "compounds": [
     {
       "name": "All micro-services",
       "configurations": [
-        "Auth-Service (debug)",
-        "User-Service (debug)",
-        "Batch-Service (debug)"
+        "Gateway Service (debug)",
+        "Auth Service (debug)",
+        "User Service (debug)",
+        "Batch Service (debug)"
       ],
-      "stopAll": true
+      "stopAll": true,
+      "preLaunchTask": "Setup All Venvs"
+    },
+    {
+      "name": "Core Services (No Gateway)",
+      "configurations": [
+        "Auth Service (debug)",
+        "User Service (debug)",
+        "Batch Service (debug)"
+      ],
+      "stopAll": true,
+      "preLaunchTask": "Setup Core Venvs"
+    },
+    {
+      "name": "Debug Gateway Only",
+      "configurations": ["Gateway Service (debug)"],
+      "stopAll": true,
+      "preLaunchTask": "Setup Gateway Venv"
     }
   ]
 }

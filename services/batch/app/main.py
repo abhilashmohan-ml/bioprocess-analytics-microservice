@@ -1,6 +1,73 @@
+"""Batch service main application with centralized configuration"""
 from fastapi import FastAPI
-from .api import router
-from .logging import configure_logging; configure_logging("INFO")
+from contextlib import asynccontextmanager
+import logging
+import sys
 
-app = FastAPI(title="Batch Service", version="1.0.0")
+# Import shared configuration - navigate to root
+sys.path.append('../../..')
+from shared.config import settings
+from shared.tracing import setup_tracing
+from shared.metrics import track_requests
+from .api import router
+
+# Configure logging based on centralized settings
+logging.basicConfig(
+    level=getattr(logging, settings.service.log_level),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager with centralized configuration"""
+    logger.info(f"🚀 Starting {settings.service.name} Batch Service")
+    logger.info(f"   Environment: {settings.service.environment}")
+    logger.info(f"   Debug: {settings.features.debug}")
+    logger.info(f"   Tracing: {settings.features.enable_tracing}")
+    logger.info(f"   Metrics: {settings.features.enable_metrics}")
+    logger.info(f"   Rate Limiting: {settings.features.enable_rate_limiting}")
+    
+    # Startup
+    yield
+    
+    # Shutdown
+    logger.info("🛑 Shutting down Batch Service")
+
+# Create FastAPI app with centralized configuration
+app = FastAPI(
+    title="Batch Service",
+    version=settings.service.version,
+    description="Batch processing microservice with centralized configuration",
+    docs_url="/docs" if settings.features.debug else None,
+    redoc_url="/redoc" if settings.features.debug else None,
+    debug=settings.features.debug,
+    lifespan=lifespan
+)
+
+# Setup distributed tracing if enabled
+if settings.features.enable_tracing:
+    tracer = setup_tracing(app, "batch-service")
+    logger.info("✅ Distributed tracing enabled")
+
+# Include the API router
 app.include_router(router)
+
+# Health check endpoint with metrics tracking
+@app.get("/healthz")
+@track_requests("batch-service")
+async def health_check():
+    """Health check with centralized configuration"""
+    return {
+        "status": "healthy",
+        "service": "batch-service",
+        "version": settings.service.version,
+        "environment": settings.service.environment,
+        "timestamp": __import__('datetime').datetime.utcnow().isoformat(),
+        "features": {
+            "tracing": settings.features.enable_tracing,
+            "metrics": settings.features.enable_metrics,
+            "rate_limiting": settings.features.enable_rate_limiting,
+            "debug": settings.features.debug
+        }
+    }

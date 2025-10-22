@@ -1,57 +1,197 @@
 version: "3.8"
-services:
-  gateway:
-    build: ./gateway
-    ports: ["8080:8080"]
-    depends_on: [user, batch, auth]
-    environment:
-      - USERS_URL=http://user:9002
-      - BATCH_URL=http://batch:9003
-      - AUTH_URL=http://auth:9001
-    profiles: ["prod"]
-  auth:
-    build: ./services/auth
-    ports: ["9001:9001"]
-    depends_on: [db_auth]
-    environment:
-      - AUTH_DATABASE_URL=postgresql+psycopg2://authuser:password@db_auth:5432/authdb
-    profiles: ["prod"]
 
-  user:
-    build: ./services/user
-    ports: ["9002:9002"]
-    depends_on: [db_user]
+services:
+  # Redis (common to both dev and prod)
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server 
+      --appendonly yes 
+      --maxmemory 256mb 
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]  # Available in both profiles
+
+  # Jaeger (common to both dev and prod)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "6831:6831/udp"
     environment:
-      - USER_DATABASE_URL=postgresql+psycopg2://useruser:password@db_user:5432/userdb
-    profiles: ["prod"]
-  batch:
-    build: ./services/batch
-    ports: ["9003:9003"]
-    depends_on: [db_batch]
-    environment:
-      - BATCH_DATABASE_URL=postgresql+psycopg2://batchuser:password@db_batch:5432/batchdb
-    profiles: ["prod"]
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]  # Available in both profiles
+
+  # Development databases
   db_auth:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_DB: authdb
       POSTGRES_USER: authuser
       POSTGRES_PASSWORD: password
+    volumes:
+      - auth_dev_data:/var/lib/postgresql/data
     ports: ["54320:5432"]
-    profiles: ["dev","prod"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]  # Only available in dev
+
   db_user:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_DB: userdb
       POSTGRES_USER: useruser
       POSTGRES_PASSWORD: password
+    volumes:
+      - user_dev_data:/var/lib/postgresql/data
     ports: ["54321:5432"]
-    profiles: ["dev", "prod"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U useruser -d userdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]  # Only available in dev
+
   db_batch:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_DB: batchdb
       POSTGRES_USER: batchuser
       POSTGRES_PASSWORD: password
+    volumes:
+      - batch_dev_data:/var/lib/postgresql/data
     ports: ["54322:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U batchuser -d batchdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]  # Only available in dev
+
+  # Gateway Service (common to both profiles)
+  gateway:
+    build: ./gateway
+    ports: ["8080:8080"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./shared:/app/shared
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bioprocess-network
     profiles: ["dev", "prod"]
+
+  # Auth Service (common to both profiles)
+  auth:
+    build: ./services/auth
+    ports: ["9001:9001"]
+    depends_on:
+      db_auth:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./shared:/app/shared
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]
+
+  # User Service (common to both profiles)
+  user:
+    build: ./services/user
+    ports: ["9002:9002"]
+    depends_on:
+      db_user:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./shared:/app/shared
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9002/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]
+
+  # Batch Service (common to both profiles)
+  batch:
+    build: ./services/batch
+    ports: ["9003:9003"]
+    depends_on:
+      db_batch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./shared:/app/shared
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9003/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]
+
+networks:
+  bioprocess-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  auth_dev_data:
+  user_dev_data:
+  batch_dev_data:
+  redis_data:

@@ -1,0 +1,186 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Setup Gateway Venv",
+      "type": "shell",
+      "command": "python",  
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/gateway"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Install Gateway Requirements",
+      "type": "shell",
+      "command": "${workspaceFolder}/gateway/.venv/bin/pip",  
+      "args": [
+        "install",
+        "-r",
+        "requirements.txt"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/gateway"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Setup Gateway Venv"
+    },
+    {
+      "label": "Setup Auth Venv",
+      "type": "shell", 
+      "command": "python",  
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/auth"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Auth Requirements",
+      "type": "shell",
+      "command": "${workspaceFolder}/services/auth/.venv/bin/pip", 
+      "args": [
+        "install",
+        "-r",
+        "requirements.txt"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/auth"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Setup Auth Venv"
+    },
+    {
+      "label": "Setup User Venv",
+      "type": "shell",
+      "command": "python", 
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/user"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install User Requirements",
+      "type": "shell",
+      "command": "${workspaceFolder}/services/user/.venv/bin/pip",  
+      "args": [
+        "install", 
+        "-r",
+        "requirements.txt"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/user"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Setup User Venv"
+    },
+    {
+      "label": "Setup Batch Venv",
+      "type": "shell",
+      "command": "python", 
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/batch"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Batch Requirements",
+      "type": "shell",
+      "command": "${workspaceFolder}/services/batch/.venv/bin/pip",
+      "args": [
+        "install",
+        "-r",
+        "requirements.txt"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/services/batch"
+      },
+      "problemMatcher": [],
+      "dependsOn": "Setup Batch Venv"
+    },
+    {
+      "label": "Setup All Venvs",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Setup Gateway Venv",
+        "Setup Auth Venv",
+        "Setup User Venv",
+        "Setup Batch Venv"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Install All Requirements",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Install Gateway Requirements",
+        "Install Auth Requirements",
+        "Install User Requirements",
+        "Install Batch Requirements"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker Compose Up",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": [
+        "up",
+        "-d"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker Compose Down",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": [
+        "down"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Database Migrations",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "run_migrations_dev.sh"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

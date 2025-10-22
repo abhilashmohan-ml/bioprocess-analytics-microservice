@@ -1,0 +1,27 @@
+I have a microservervice architecture for FastAPI for a bioprocessing application. These are the files and folder strcture that I have
+A. Folder structure: Given in the file BioprocessAnalyticsDesignSpecs.md
+B. System architecture; Given in the file BioprocessAnalyticsDesignSpecs.md
+C. Entity Relationship: Given in the file BioprocessAnalyticsDesignSpec.md
+Files (in order uploaded):
+BioprocessAnalyticsDesignSpecs.md is the first file with all the architecture as described above in A,B,C sections
+Readme.md is the readme file showing the API paths
+docker-compose.yml is the docker file
+run_migrations_bash.sh is to run the migrations scripts from the bash terminal
+
+1. 'gateway' folder (in order uploaded):
+main.py,  requirements.txt
+2. 'services' folder has three additional folder 'auth','user','batch'
+ (a)/services/auth contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
+    (1)'app' folder contains exceptions.py, logging.py, utils.py,  main.py, db.py, models.py, api.py and auth.py
+ (b) /services/user contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
+    (1) 'app' folder contains exceptions.py, logging.py, utils.py, main.py, db.py, models.py, api.py and users.py
+ (c) /services/batch contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
+    (1) 'app' folder contains exceptions.py, logging.py, utils.py, main.py, db.py, models.py, api.py and batch.py
+    
+Everything runs on VScode in dev set-up with a script running all the vscode microservervice from a single vscode script. 
+
+Keep all the files handy and analyze them critically with the best tool you possess. I will ask subsequent questions and you will have to provide me with 
+1. complete answers and always give me complete and elaborate answers
+2. When the code is modified give me complete files. Provide detailed inline code comments
+3. Always prioritize the best practices of architectural design do not be lazy and take shortcuts
+4. Give me state-of-the art answers and not dated answers
