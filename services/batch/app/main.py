@@ -1,19 +1,24 @@
-"""Batch service main application with centralized configuration"""
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
+#!/usr/bin/env python3
+"""Batch-service entry-point – flat config, bullet-proof imports."""
 import logging
-import sys
+import sys, os
+from contextlib import asynccontextmanager
 
-# Import shared configuration - navigate to root
-sys.path.append('../../..')
+# container paths
+sys.path.extend(("/app", "/app/shared"))
+
+# shared flat config
 from shared.config import settings
-from shared.tracing import setup_tracing
 from shared.metrics import track_requests
+from shared.tracing import setup_tracing
+
+# local router
 from .api import router
 
+from fastapi import FastAPI
 # Configure logging based on centralized settings
 logging.basicConfig(
-    level=getattr(logging, settings.service.log_level),
+    level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -21,12 +26,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager with centralized configuration"""
-    logger.info(f"🚀 Starting {settings.service.name} Batch Service")
-    logger.info(f"   Environment: {settings.service.environment}")
-    logger.info(f"   Debug: {settings.features.debug}")
-    logger.info(f"   Tracing: {settings.features.enable_tracing}")
-    logger.info(f"   Metrics: {settings.features.enable_metrics}")
-    logger.info(f"   Rate Limiting: {settings.features.enable_rate_limiting}")
+    logger.info(f"🚀 Starting {settings.SERVICE_NAME} Batch Service")
+    logger.info(f"   Environment: {settings.ENVIRONMENT}")
+    logger.info(f"   Debug: {settings.DEBUG}")
+    logger.info(f"   Tracing: {settings.ENABLE_TRACING}")
+    logger.info(f"   Metrics: {settings.ENABLE_METRICS}")
+    logger.info(f"   Rate Limiting: {settings.ENABLE_RATE_LIMITING}")
     
     # Startup
     yield
@@ -37,16 +42,16 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app with centralized configuration
 app = FastAPI(
     title="Batch Service",
-    version=settings.service.version,
+    version=settings.SERVICE_VERSION,
     description="Batch processing microservice with centralized configuration",
-    docs_url="/docs" if settings.features.debug else None,
-    redoc_url="/redoc" if settings.features.debug else None,
-    debug=settings.features.debug,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
+    debug=settings.DEBUG,
     lifespan=lifespan
 )
 
 # Setup distributed tracing if enabled
-if settings.features.enable_tracing:
+if settings.ENABLE_TRACING:
     tracer = setup_tracing(app, "batch-service")
     logger.info("✅ Distributed tracing enabled")
 
@@ -61,13 +66,12 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "batch-service",
-        "version": settings.service.version,
-        "environment": settings.service.environment,
+        "version": settings.SERVICE_VERSION,
+        "environment": settings.SERVICE_ENVIRONMENT,
         "timestamp": __import__('datetime').datetime.utcnow().isoformat(),
         "features": {
-            "tracing": settings.features.enable_tracing,
-            "metrics": settings.features.enable_metrics,
-            "rate_limiting": settings.features.enable_rate_limiting,
-            "debug": settings.features.debug
+            "tracing": settings.ENABLE_TRACING,
+            "metrics": settings.ENABLE_METRICS,
+            "rate_limiting": settings.ENABLE_RATE_LIMITING,
         }
     }

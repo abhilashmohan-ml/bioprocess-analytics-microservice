@@ -1,25 +1,34 @@
-"""Enhanced API Gateway with all security and operational features"""
-from fastapi import FastAPI, Request, Response, HTTPException, Depends
+#!/usr/bin/env python3
+"""API Gateway – flat config, bullet-proof imports."""
+import json
+import logging
+import os
+import sys
+import time
+from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+# container paths
+sys.path.extend(("/app", "/app/shared"))
+
+# shared flat config
+from shared.config import settings
+from shared.event_bus import event_bus, EventType
+from shared.metrics import (
+    error_count,
+    generate_metrics_response,
+    track_requests,
+)
+from shared.security import security_manager
+
+# FastAPI ecosystem
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import httpx
 import redis
-import json
-import os
-import time
-from datetime import datetime
-from typing import Optional, Dict, Any, List
-import logging
-from contextlib import asynccontextmanager
-
-# Import shared utilities
-import sys
-sys.path.append('..')
-from shared.event_bus import event_bus, EventType
-from shared.metrics import track_requests, generate_metrics_response, error_count
-from shared.security import security_manager
-from shared.config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -129,18 +138,18 @@ class RateLimiter:
 def get_redis_client():
     """Get Redis client with connection pooling"""
     return redis.Redis.from_url(
-        settings.redis.url,
-        max_connections=settings.redis.max_connections,
-        socket_connect_timeout=settings.redis.socket_connect_timeout,
-        socket_timeout=settings.redis.socket_timeout,
-        retry_on_timeout=settings.redis.retry_on_timeout,
-        health_check_interval=settings.redis.health_check_interval
+        settings.REDIS_URL,
+        max_connections=settings.REDIS_MAX_CONNECTIONS,
+        socket_connect_timeout=settings.REDIS_SOCKET_CONNECT_TIMEOUT,
+        socket_timeout=settings.REDIS_SOCKET_TIMEOUT,
+        retry_on_timeout=settings.REDIS_RETRY_ON_TIMEOUT,
+        health_check_interval=settings.REDIS_HEALTH_CHECK_INTERVAL
     )
 
 # Initialize circuit breaker and rate limiter
 circuit_breaker = CircuitBreaker()
 redis_client = get_redis_client()
-rate_limiter = RateLimiter(redis_client, settings.security.rate_limit_per_minute)
+rate_limiter = RateLimiter(redis_client, settings.RATE_LIMIT_PER_MINUTE)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -168,7 +177,7 @@ app = FastAPI(
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.security.cors_origins.split(","),
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

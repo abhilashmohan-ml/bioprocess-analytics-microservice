@@ -1,7 +1,13 @@
-version: "3.8"
+# ===================================================================
+# 🐳 Bioprocess Analytics - Complete Docker Compose Configuration
+# ===================================================================
+# This configuration supports both development and production profiles
+# Profiles: ["dev", "prod"]
 
 services:
-  # Redis (common to both dev and prod)
+  # ===================================================================
+  # 🔄 REDIS - Caching & Event Bus (Common to all profiles)
+  # ===================================================================
   redis:
     image: redis:7-alpine
     ports: ["6379:6379"]
@@ -12,6 +18,8 @@ services:
       --appendonly yes 
       --maxmemory 256mb 
       --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel notice
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -19,101 +27,47 @@ services:
       retries: 5
     networks:
       - bioprocess-network
-    profiles: ["dev", "prod"]  # Available in both profiles
+    profiles: ["dev", "prod"]
 
-  # Jaeger (common to both dev and prod)
+   # ===================================================================
+  # 📊 JAEGER v2 – single binary, OTLP-native, V1-compatible
+  # ===================================================================
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:2.0.0          # ← V2 single binary
     ports:
-      - "16686:16686"
-      - "14268:14268"
-      - "6831:6831/udp"
+      - "16686:16686"   # Jaeger UI (unchanged)
+      - "4317:4317"     # OTLP gRPC (unchanged)
+      - "4318:4318"     # OTLP HTTP (unchanged)
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
-    networks:
-      - bioprocess-network
-    profiles: ["dev", "prod"]  # Available in both profiles
-
-  # Development databases
-  db_auth:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: authdb
-      POSTGRES_USER: authuser
-      POSTGRES_PASSWORD: password
-    volumes:
-      - auth_dev_data:/var/lib/postgresql/data
-    ports: ["54320:5432"]
+      # run in “all-in-one” dev mode (collector + query in one process)
+      JAEGER_CONFIG: |
+        service:
+          pipelines:
+            traces:
+              receivers: [otlp]
+              exporters: [memory]   # dev only – swap for elasticsearch/clickhouse/etc. in prod
+          extensions: [jaeger_query]
+        extensions:
+          jaeger_query:
+            server:
+              http:
+                endpoint: 0.0.0.0:16686
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      test: ["CMD", "curl", "-f", "http://localhost:16686/"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
-    networks:
-      - bioprocess-network
-    profiles: ["dev"]  # Only available in dev
-
-  db_user:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: userdb
-      POSTGRES_USER: useruser
-      POSTGRES_PASSWORD: password
-    volumes:
-      - user_dev_data:/var/lib/postgresql/data
-    ports: ["54321:5432"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U useruser -d userdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - bioprocess-network
-    profiles: ["dev"]  # Only available in dev
-
-  db_batch:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: batchdb
-      POSTGRES_USER: batchuser
-      POSTGRES_PASSWORD: password
-    volumes:
-      - batch_dev_data:/var/lib/postgresql/data
-    ports: ["54322:5432"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U batchuser -d batchdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - bioprocess-network
-    profiles: ["dev"]  # Only available in dev
-
-  # Gateway Service (common to both profiles)
-  gateway:
-    build: ./gateway
-    ports: ["8080:8080"]
-    depends_on:
-      redis:
-        condition: service_healthy
-      jaeger:
-        condition: service_started
-    env_file:
-      - .env
-    volumes:
-      - ./shared:/app/shared
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     networks:
       - bioprocess-network
     profiles: ["dev", "prod"]
 
-  # Auth Service (common to both profiles)
+  # ===================================================================
+  # 🔐 AUTH SERVICE - Authentication & Authorization
+  # ===================================================================
   auth:
-    build: ./services/auth
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
     ports: ["9001:9001"]
     depends_on:
       db_auth:
@@ -126,18 +80,25 @@ services:
       - .env
     volumes:
       - ./shared:/app/shared
+      - .:/app
+      - ./services/auth:/app/auth_service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
     networks:
       - bioprocess-network
     profiles: ["dev", "prod"]
 
-  # User Service (common to both profiles)
+  # ===================================================================
+  # 👥 USER SERVICE - User Management
+  # ===================================================================
   user:
-    build: ./services/user
+    build:
+      context: .
+      dockerfile: services/user/Dockerfile
     ports: ["9002:9002"]
     depends_on:
       db_user:
@@ -150,18 +111,25 @@ services:
       - .env
     volumes:
       - ./shared:/app/shared
+      - .:/app
+      - ./services/user:/app/user_service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9002/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
     networks:
       - bioprocess-network
     profiles: ["dev", "prod"]
 
-  # Batch Service (common to both profiles)
+  # ===================================================================
+  # 📊 BATCH SERVICE - Batch Processing
+  # ===================================================================
   batch:
-    build: ./services/batch
+    build:
+      context: .
+      dockerfile: services/batch/Dockerfile
     ports: ["9003:9003"]
     depends_on:
       db_batch:
@@ -174,15 +142,121 @@ services:
       - .env
     volumes:
       - ./shared:/app/shared
+      - .:/app
+      - ./services/batch:/app/batch_service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9003/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
     networks:
       - bioprocess-network
     profiles: ["dev", "prod"]
 
+  # ===================================================================
+  # 🗄️ DEVELOPMENT DATABASES (Development Profile Only)
+  # ===================================================================
+  db_auth:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - auth_dev_data:/var/lib/postgresql/data
+    ports: ["54320:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]
+
+  db_user:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: useruser
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - user_dev_data:/var/lib/postgresql/data
+    ports: ["54321:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U useruser -d userdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]
+
+  db_batch:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: batchdb
+      POSTGRES_USER: batchuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - batch_dev_data:/var/lib/postgresql/data
+    ports: ["54322:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U batchuser -d batchdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bioprocess-network
+    profiles: ["dev"]
+
+  # ===================================================================
+  # 🌐 GATEWAY SERVICE - API Gateway & Load Balancer
+  # ===================================================================
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    ports: ["8080:8080"]
+    depends_on:
+      user:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      batch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./shared:/app/shared
+      - .:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - bioprocess-network
+    profiles: ["dev", "prod"]
+
+  # ===================================================================
+  # 🌐 PRODUCTION INFRASTRUCTURE (Production Profile Only)
+  # ===================================================================
+  # Production databases, monitoring, scaling, etc. would go here
+  # Example: db_auth_prod, prometheus, grafana, etc.
+
+# ===================================================================
+# 🌐 NETWORKS & VOLUMES
+# ===================================================================
 networks:
   bioprocess-network:
     driver: bridge

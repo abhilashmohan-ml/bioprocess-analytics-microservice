@@ -1,28 +1,51 @@
 #!/usr/bin/env bash
+# run_migrations_dev.sh - Development migrations with proper sequencing
+
 set -euo pipefail
-# --- safe port killer ---
-echo "Killing all services on 9001-9006 (if any)..."
-for p in 9001 9002 9003 9004 9005 9006; do
-  for pid in $(lsof -ti:"$p" 2>/dev/null || true); do
-    kill -9 "$pid" 2>/dev/null || true
-  done
-done
-echo "Bringing down any running Docker services..."
-docker-compose --profile dev down
 
-echo "Starting Docker DBs..."
-docker-compose --profile dev up -d
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[1;31m'
+NC='\033[0m'
 
-# --- wait until each DB is ready ---
+PYTHON_CMD="python"
+
+log() {
+    echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"
+}
+
+error() {
+    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR: $1${NC}"
+    exit 1
+}
+
+log "🚀 Starting development database migrations..."
+
+# CRITICAL: Check if Docker containers are running first
+log "🔍 Checking if Docker containers are running..."
 for port in 54320 54321 54322; do
-  echo "Waiting for DB on port $port ..."
-  until pg_isready -h localhost -p "$port" >/dev/null 2>&1; do
-    sleep 1
-  done
+    if ! nc -z localhost $port 2>/dev/null; then
+        error "Database on port $port is not accessible. Did you run 'docker-compose --profile dev up -d' first?"
+    fi
 done
 
-echo "All DBs are up. Running migrations..."
+# Wait for databases to be fully ready
+log "⏳ Waiting for databases to be fully ready..."
+for port in 54320 54321 54322; do
+    log "Waiting for database on port $port to accept connections..."
+    timeout=60
+    while ! pg_isready -h localhost -p "$port" >/dev/null 2>&1; do
+        sleep 2
+        timeout=$((timeout - 2))
+        if [ $timeout -le 0 ]; then
+            error "Database on port $port failed to become ready within 60 seconds"
+        fi
+    done
+    log "✅ Database on port $port is ready"
+done
 
+log "✅ All databases are healthy. Starting migrations..."
 # ---------- AUTH ----------
 (
   cd services/auth
@@ -73,5 +96,5 @@ echo "All DBs are up. Running migrations..."
   deactivate
   cd ../../
 )
-
+log "✅ All development migrations completed!"
 echo "All migrations complete!"

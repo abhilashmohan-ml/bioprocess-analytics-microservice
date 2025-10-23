@@ -6,7 +6,7 @@ from uuid import uuid4
 import logging
 import sys
 from datetime import datetime
-
+from typing import Optional
 # Import centralized configuration
 sys.path.append('../../..')
 from shared.config import settings

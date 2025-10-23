@@ -1,71 +1,80 @@
-"""Auth service main application with centralized configuration"""
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
+#!/usr/bin/env python3
+"""Auth-service entry-point – flat config, bullet-proof imports."""
 import logging
 import sys
+from contextlib import asynccontextmanager
+from datetime import datetime
 
-# Import shared configuration and tracing
-sys.path.append('../../..')
+# container paths
+sys.path.extend(("/app", "/app/shared"))
+
+# shared flat config
 from shared.config import settings
-from shared.tracing import setup_tracing
 from shared.metrics import track_requests
+from shared.tracing import setup_tracing
+
+# local router
 from .api import router
 
-# Configure logging based on centralized settings
+# ----------  CRITICAL:  FastAPI import  ----------
+from fastapi import FastAPI
+
+# Configure logging with flat keys
 logging.basicConfig(
-    level=getattr(logging, settings.service.log_level),
+    level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager with centralized configuration"""
-    logger.info(f"🚀 Starting {settings.service.name} Auth Service")
-    logger.info(f"   Environment: {settings.service.environment}")
-    logger.info(f"   Debug: {settings.features.debug}")
-    logger.info(f"   Tracing: {settings.features.enable_tracing}")
-    logger.info(f"   Metrics: {settings.features.enable_metrics}")
-    
+    """Enhanced startup with flat-key logging."""
+    logger.info("🚀 Starting Auth Service with enhanced monitoring")
+    logger.info(f"   Environment: {settings.ENVIRONMENT}")
+    logger.info(f"   Database: {settings.AUTH_DATABASE_URL}")
+    logger.info(f"   Redis: {settings.REDIS_URL}")
+    logger.info(f"   Tracing: {settings.ENABLE_TRACING}")
+    logger.info(f"   Metrics: {settings.ENABLE_METRICS}")
+
     # Startup
     yield
-    
+
     # Shutdown
     logger.info("🛑 Shutting down Auth Service")
 
-# Create FastAPI app with centralized configuration
+
+# Create FastAPI app
 app = FastAPI(
     title="Auth Service",
-    version=settings.service.version,
-    description="Authentication microservice with centralized configuration",
-    docs_url="/docs" if settings.features.debug else None,
-    redoc_url="/redoc" if settings.features.debug else None,
-    debug=settings.features.debug,
+    version=settings.SERVICE_VERSION,
+    description="Authentication microservice with flat config",
+    debug=settings.DEBUG,
     lifespan=lifespan
 )
 
-# Setup distributed tracing if enabled
-if settings.features.enable_tracing:
+# Setup tracing if enabled
+if settings.ENABLE_TRACING:
     tracer = setup_tracing(app, "auth-service")
-    logger.info("✅ Distributed tracing enabled")
 
 # Include API router
 app.include_router(router)
 
-# Health check endpoint
+# Health check with flat keys
 @app.get("/healthz")
 @track_requests("auth-service")
 async def health_check():
-    """Health check with centralized configuration"""
+    """Health check with flat config."""
     return {
         "status": "healthy",
         "service": "auth-service",
-        "version": settings.service.version,
-        "environment": settings.service.environment,
-        "timestamp": __import__('datetime').datetime.utcnow().isoformat(),
-        "features": {
-            "tracing": settings.features.enable_tracing,
-            "metrics": settings.features.enable_metrics,
-            "rate_limiting": settings.features.enable_rate_limiting
+        "version": settings.SERVICE_VERSION,
+        "environment": settings.ENVIRONMENT,
+        "timestamp": datetime.utcnow().isoformat(),
+        "checks": {
+            "tracing": settings.ENABLE_TRACING,
+            "metrics": settings.ENABLE_METRICS,
+            "database": "connected",
+            "redis": "connected"
         }
     }

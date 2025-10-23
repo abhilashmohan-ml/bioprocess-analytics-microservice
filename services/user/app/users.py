@@ -3,6 +3,7 @@ from .db import User, Base
 from .models import UserCreate, UserRead
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from typing import Optional 
 from uuid import uuid4
 import logging
 import sys
@@ -15,7 +16,7 @@ from shared.security import security_manager
 logger = logging.getLogger(__name__)
 
 # Use centralized bcrypt configuration
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", rounds=settings.security.bcrypt_rounds)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserService:
     """User service with centralized configuration and security"""

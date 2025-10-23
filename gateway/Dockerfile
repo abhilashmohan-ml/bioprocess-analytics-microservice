@@ -1,22 +1,29 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# ===================================================================
+# 🕵️ UNIVERSAL SYSTEM DEPENDENCIES (from root context)
+# ===================================================================
+
+# Copy from root build context (now accessible!)
+COPY detect-and-install.sh /tmp/detect-and-install.sh
+RUN chmod +x /tmp/detect-and-install.sh && \
+    /tmp/detect-and-install.sh docker-deps && \
+    rm /tmp/detect-and-install.sh
+
+# ===================================================================
+# 🐍 PYTHON & APPLICATION SETUP
+# ===================================================================
 
 # Set work directory
-WORKDIR /app
+WORKDIR /app/gateway
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY gateway/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy gateway files
-COPY . .
-
-# Copy shared utilities
-COPY ../shared /app/shared
+# Copy application files
+COPY gateway/ .
+COPY shared/ /app/shared/
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app

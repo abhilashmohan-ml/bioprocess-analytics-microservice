@@ -102,7 +102,7 @@ target_metadata = Base.metadata
 # Get database URL from centralized environment
 service_name = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 db_url_var = f"{service_name.upper()}_DATABASE_URL"
-config.set_main_option("sqlalchemy.url", os.getenv(db_url_var, settings.database.auth_database_url))
+config.set_main_option("sqlalchemy.url", os.getenv(db_url_var, settings.auth_database_url_DATABASE_URL))
 
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")

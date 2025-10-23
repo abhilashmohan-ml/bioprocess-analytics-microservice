@@ -1,31 +1,46 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# ===================================================================
+# 🕵️  Universal OS dependencies
+# ===================================================================
+COPY detect-and-install.sh /tmp/detect-and-install.sh
+RUN chmod +x /tmp/detect-and-install.sh && \
+    /tmp/detect-and-install.sh docker-deps && \
+    rm /tmp/detect-and-install.sh
 
-# Set work directory
+# ===================================================================
+# 🐍  Python & app
+# ===================================================================
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# 1.  requirements layer (cached)
+COPY services/batch/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-COPY . .
+# 2.  application code
+COPY services/batch/ ./batch_service/
+COPY shared/        ./shared/
+RUN chmod 755 /app
 
-# Copy shared utilities from root (CRITICAL for centralized config)
-COPY ../../shared /app/shared
+# 3.  non-root user + permissions (🔥 critical fix)
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    chmod 755 /app                 # allow traversal
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# 4.  runtime user
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:9003/healthz || exit 1
+ENV PYTHONPATH=/app:/app/shared
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9003", "--workers", "1"]
+# 5.  health check (runs as appuser)
+HEALTHCHECK --interval=30s --timeout=15s --start-period=15s --retries=10 \
+  CMD python -c \
+  "import sys, requests, batch_service.app.main as m; \
+   print('✅ module imported'); \
+   r = requests.get('http://localhost:9003/healthz', timeout=5); \
+   r.raise_for_status(); \
+   print('✅ health OK')"
+
+# 6.  start
+CMD ["uvicorn", "batch_service.app.main:app", \
+     "--host", "0.0.0.0", "--port", "9003", "--workers", "1"]

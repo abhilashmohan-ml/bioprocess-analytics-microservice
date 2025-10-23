@@ -1,4 +1,4 @@
-"""Batch service logic with centralized configuration"""
+from typing import Optional, List                  # ← NEW
 from .db import Batch
 from .models import BatchCreate, BatchRead
 from sqlalchemy.orm import Session

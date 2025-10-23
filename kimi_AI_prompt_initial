@@ -2,6 +2,7 @@ I have a microservervice architecture for FastAPI for a bioprocessing applicatio
 A. Folder structure: Given in the file BioprocessAnalyticsDesignSpecs.md
 B. System architecture; Given in the file BioprocessAnalyticsDesignSpecs.md
 C. Entity Relationship: Given in the file BioprocessAnalyticsDesignSpec.md
+note: the A, B, C given may not be updated. Please update it by looking at the files
 Files (in order uploaded):
 BioprocessAnalyticsDesignSpecs.md is the first file with all the architecture as described above in A,B,C sections
 Readme.md is the readme file showing the API paths
@@ -9,14 +10,21 @@ docker-compose.yml is the docker file
 run_migrations_bash.sh is to run the migrations scripts from the bash terminal
 
 1. 'gateway' folder (in order uploaded):
-main.py,  requirements.txt
+main.py,  requirements.txt, dockerfile, .venv environment present but not shared.
 2. 'services' folder has three additional folder 'auth','user','batch'
  (a)/services/auth contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
     (1)'app' folder contains exceptions.py, logging.py, utils.py,  main.py, db.py, models.py, api.py and auth.py
+    (2) /services/auth folder contains the files Dockerfile, requirements.txt, alembic.ini
  (b) /services/user contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
     (1) 'app' folder contains exceptions.py, logging.py, utils.py, main.py, db.py, models.py, api.py and users.py
+    (2) /services/user folder contains the files Dockerfile, requirements.txt, alembic.ini
  (c) /services/batch contains 'app' and 'alembic' folders apart from Dockerfile, requirements.txt, alembic.ini 
     (1) 'app' folder contains exceptions.py, logging.py, utils.py, main.py, db.py, models.py, api.py and batch.py
+    (2) /services/batch folder contains the files Dockerfile, requirements.txt, alembic.ini
+3. 'bioprocess-analytics-microservice/shared': Shared folder with all things that are shared and the following files are present: config.py,event_bus.py,metrics.py,security.py,tracing.py
+4. 'bioprocess-analytics-microservice/.vscode':vscode setup files: setup-dev-env.sh, task.json,launch.json
+5. files under 'bioprocess-analytics-microservice': detect-and-install.sh,run_migrations_bash_dev_testing.sh,port_clean_up.sh,run_migrations_bash_prod_untested.sh,setup-system-deps.sh, docker-compose.yml, .env
+Note: some of the requirement.txt have been omitted since they are the same across all services
     
 Everything runs on VScode in dev set-up with a script running all the vscode microservervice from a single vscode script. 
 
@@ -25,3 +33,4 @@ Keep all the files handy and analyze them critically with the best tool you poss
 2. When the code is modified give me complete files. Provide detailed inline code comments
 3. Always prioritize the best practices of architectural design do not be lazy and take shortcuts
 4. Give me state-of-the art answers and not dated answers
+5. When you make changes update the BioprocessAnalyticsDesignSpec.md files and the readme.md files. Do this always when changes are made.
